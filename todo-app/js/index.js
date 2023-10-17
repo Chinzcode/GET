@@ -4,6 +4,9 @@ function updateView() {
     <div>
         ${updateInputView()}
     </div>
+    <div>
+        ${updateDropdownBoxView()}
+    </div>
     <ul>
         ${updateListView()}
     </ul>
@@ -12,10 +15,8 @@ function updateView() {
 
 function updateInputView() {
     let html = /*HTML*/`
-    <input type="text" id="inputFieldTask" 
-    oninput="model.input.task = this.value" placeholder="Write task">
-    <input type="text" id="inputFieldName" 
-    oninput="model.input.name = this.value" placeholder="Write responsible">
+    <input type="text" id="inputFieldTask" oninput="model.input.task = this.value" placeholder="Write task">
+    <input type="text" id="inputFieldName" oninput="model.input.name = this.value" placeholder="Write responsible">
     <button onclick="addTask()">Submit</button>
     <div>${model.app.errorMessage || ''}</div>
     `;
@@ -25,32 +26,49 @@ function updateInputView() {
 function updateListView() {
     let html = '';
     for (let i = 0; i < model.data.length; i++) {
-        html += `<li>${test(i)}</li>`;
+        html += `<li>${updateEditModeView(i)}</li>`;
     }
     return html;
 }
-
-function test(index) {
+function updateEditModeView(index) {
     let html = '';
-    if (!model.input.editMode) {
+    if (!model.data[index].editMode) { // Check the editMode property
         html = /*HTML*/`
         ${model.data[index].text}
         ${model.data[index].responsible}
-        <button onclick="toggleTaskDone(${index})">done</button>
-        <button onclick="deleteTask(${index})">del</button>
-        <button onclick="editTask(${index})">edit</button>
-        `; 
-    } else 
+        <button onclick="toggleTaskDone(${index})">✓</button>
+        <button onclick="editTask(${index})">✎</button>
+        <button onclick="deleteTask(${index})">✖</button>
+        `;
+    } else {
         html = /*HTML*/`
         <input type="text" value="${model.data[index].text}" oninput="model.input.edit.text = this.value"/>
         <input type="text" value="${model.data[index].responsible}" oninput="model.input.edit.responsible = this.value"/>
         <button onclick="updateTask(${index})">Save</button>
         `;
-    
+    }
     html += model.data[index].doneDate || '';
     return html;
 }
 
+function updateDropdownBoxView() {
+    let html = '<select>';
+    let names = ['All'];
+    for (let i = 0; i < model.data.length; i++) {
+        let responsible = model.data[i].responsible;
+        if (!names.includes(responsible)) {
+            names.push(responsible);
+        }
+    }
+    for (let element of names) {
+        html += `<option>${element}</option>`;
+    }
+    html += '</select>';
+    return html;
+}
+
+// html += `<option>${model.data[i].responsible}</option>`;
+ 
 //Controller
 function toggleTaskDone(index) {
     const d = new Date();
@@ -69,7 +87,7 @@ function deleteTask(index) {
 
 function addTask() {
     if (model.input.task != null && model.input.name != null) {
-        model.data.push({text: model.input.task, responsible: model.input.name, doneDate: null, isDone: false});
+        model.data.push({text: model.input.task, responsible: model.input.name, doneDate: null, isDone: false, editMode: false,});
         model.app.errorMessage = null;
     } else {
         model.app.errorMessage = 'Error: Fyll ut begge tesktfelt!'
@@ -79,21 +97,21 @@ function addTask() {
     updateView();
 }
 
-function editTask(index) {
-    model.input.editMode = true;
+function editTask(index) { //NB! Kan kun redigere enn oppgave om gangen
+    model.data[index].editMode = true;
+    model.input.edit.text = model.data[index].text;
+    model.input.edit.responsible = model.data[index].responsible;
     updateView();
 }
 
 function updateTask(index) {
-    model.input.editMode = false;
-    if (model.input.edit.text != null && model.input.edit.responsible != null) {
+    if (model.input.edit.text === '' || model.input.edit.responsible === '') {
+        model.app.errorMessage = 'Error: Fyll ut begge tesktfelt!'
+    } else {
         model.data[index].text = model.input.edit.text;
         model.data[index].responsible = model.input.edit.responsible;
         model.app.errorMessage = null;
-    } else {
-        model.app.errorMessage = 'Error: Fyll ut begge tesktfelt!'
     }
-    // <input type="text" value="${model.data[index].text}" oninput="model.input.edit.text = this.value"/>
-    // <input type="text" value="${model.data[index].responsible}" oninput="model.input.edit.responsible = this.value"/>
+    model.data[index].editMode = false;
     updateView();
 }
