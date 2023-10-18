@@ -9,7 +9,7 @@ let model = {
             text: null,
             responsible: null,
         },
-        currentlyEditing: false,
+        filterName: 'Trym',
     },
     data: [
         {text: 'Rydde', 
