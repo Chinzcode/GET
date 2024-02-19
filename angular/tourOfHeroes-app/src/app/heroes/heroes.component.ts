@@ -3,10 +3,8 @@ import { Hero } from '../hero';
 
 @Component({
   selector: 'app-heroes',
-  standalone: true,
-  imports: [],
   templateUrl: './heroes.component.html',
-  styleUrl: './heroes.component.css'
+  styleUrls: ['./heroes.component.css']
 })
 export class HeroesComponent {
   hero: Hero = {
@@ -14,4 +12,3 @@ export class HeroesComponent {
     name: 'Windstorm'
   };
 }
-2
